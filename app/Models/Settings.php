@@ -8,6 +8,8 @@ class Settings extends Model
 {
     public $timestamps = false;
 
+    public $incrementing = false;
+
     protected $fillable = [
         'id',
         'restaurant_name',

@@ -16,6 +16,9 @@
 /public/hot
 /public/storage
 /public/uploads/
+/database/install.sql
+/menu-qr.png
+/menu-qr.svg
 /storage/*.key
 /storage/pail
 /vendor
