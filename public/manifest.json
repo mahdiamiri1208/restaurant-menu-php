@@ -1,0 +1,12 @@
+{
+  "name": "منوی رستوران نارنج",
+  "short_name": "منوی نارنج",
+  "description": "منوی دیجیتال رستوران",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#15110e",
+  "theme_color": "#15110e"
+}
