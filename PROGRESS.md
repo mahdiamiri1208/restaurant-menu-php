@@ -4,7 +4,7 @@ Compatibility verification: Laravel 13 requires PHP `^8.3`; Filament 5 requires 
 
 | Step | Status | Evidence | Missing |
 |---|---|---|---|
-| 1. Laravel 13 scaffold, PHP 8.3 Composer platform, configuration | PARTIAL | `composer.json`, Laravel 13.0.0 scaffold | Resolve dependencies, configure locale/timezone/database/cache/session, and verify all resolved package requirements. |
+| 1. Laravel 13 scaffold, PHP 8.3 Composer platform, configuration | DONE | `composer.json`, `composer.lock`, `config/app.php`, `config/database.php`, `config/cache.php`, `config/session.php`, `config/queue.php`, `.env.example` | None. Composer resolved Laravel 13.39.0 and Filament 5 on PHP 8.3.0; local PHP 8.5 requirements passed. |
 | 2. Migrations, models, seeder, shared helper | NOT STARTED | None | Port Prisma schema, exact seed data, and shared discount/format helpers. |
 | 3. Public page, CSS/JS, local font | NOT STARTED | None | Port the reference markup, design, interactions, and local font. |
 | 4. HTML caching, invalidation, PWA | NOT STARTED | None | Add warm file caching, validators, observers, and versioned offline assets. |
