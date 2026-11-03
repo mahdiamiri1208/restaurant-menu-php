@@ -164,8 +164,11 @@ The host does not need Node.js. `public/build` and all fonts, icons, and admin a
 1. Back up the database and `public_html/uploads`.
 2. Build the new frontend assets and run `composer install --no-dev --optimize-autoloader` locally.
 3. Upload the updated application files and the new contents of `public` while preserving the production `.env`, uploaded images, and writable `storage` data.
-4. If the release changes the database schema, prepare and test a version-specific SQL migration locally, then import that migration in phpMyAdmin after taking the backup. Do not import `database/install.sql` over live data.
-5. Verify `/`, `/admin`, image uploads, and the public menu cache after deployment.
+4. Clear the application cache after uploading the new build. If SSH is available, run `php artisan cache:clear` from the private application directory. Otherwise, in the hosting file manager, delete the files inside `storage/framework/cache/data` without deleting the directory itself.
+5. If the release changes the database schema, prepare and test a version-specific SQL migration locally, then import that migration in phpMyAdmin after taking the backup. Do not import `database/install.sql` over live data.
+6. Verify `/`, `/admin`, image uploads, and the public menu cache after deployment.
+
+The public menu cache is also separated by request scheme/host/port and automatically rebuilds when the Vite manifest fingerprint or service-worker cache version changes. Clearing the Laravel cache after deployment remains a safe precaution, especially when using file caches copied or retained between releases.
 
 ## Troubleshooting
 
