@@ -1,0 +1,25 @@
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/vazirmatn.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+}
+
+:root,
+body,
+button,
+input,
+select,
+textarea {
+    font-family: "Vazirmatn", Tahoma, sans-serif;
+}
+
+.fi-btn,
+.fi-icon-btn {
+    min-height: 44px;
+}
+
+.fi-icon-btn {
+    min-width: 44px;
+}

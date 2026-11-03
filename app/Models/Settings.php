@@ -9,6 +9,7 @@ class Settings extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'id',
         'restaurant_name',
         'logo_url',
         'phone',
