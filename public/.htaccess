@@ -5,6 +5,23 @@
 
     RewriteEngine On
 
+    # Keep HTTP-01 certificate validation reachable before HTTPS is configured.
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [R=301,L]
+
+    # Allow ACME challenge files, but deny other hidden paths.
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+    # Deny private application files if the document root is configured incorrectly.
+    RewriteRule ^(?:app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|\.git)(?:/|$) - [F,L,NC]
+    RewriteRule ^(?:artisan|composer\.(?:json|lock)|package(?:-lock)?\.json|phpunit\.xml(?:\.dist)?|vite\.config\.(?:js|ts)|README\.md|PROGRESS\.md)$ - [F,L,NC]
+
+    # Never serve executable uploads or PHP files other than Laravel's front controller.
+    RewriteRule ^uploads/.*\.(?:php[0-9]?|phtml|phar)(?:/|$) - [F,L,NC]
+    RewriteRule ^(?!index\.php$).+\.php[0-9]?(?:/|$) - [F,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -23,3 +40,42 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "(?i)^(?:\.env(?:\..*)?|\.git|composer\.(?:json|lock)|package(?:-lock)?\.json|phpunit\.xml(?:\.dist)?|artisan|README\.md|PROGRESS\.md)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    <IfModule mod_setenvif.c>
+        SetEnvIf Request_URI "^/(?:build|fonts|uploads)/" menu_static_asset
+        Header always set Cache-Control "public, max-age=31536000, immutable" env=menu_static_asset
+    </IfModule>
+
+    <FilesMatch "^(?:sw\.js|manifest\.json)$">
+        Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType image/avif "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/manifest+json image/svg+xml
+</IfModule>
+
+AddType image/webp .webp

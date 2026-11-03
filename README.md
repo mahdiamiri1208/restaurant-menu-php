@@ -1,58 +1,184 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Restaurant Menu
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Persian, right-to-left restaurant menu and Filament administration panel built with Laravel 13, PHP, MariaDB/MySQL, Blade, and locally bundled Vite assets. The public menu is server-rendered, cached, and supports offline use after its first visit. The application does not require Node.js, a queue worker, Redis, or external runtime services on the production host.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3, 8.4, or 8.5
+- MySQL or MariaDB with `utf8mb4` and `utf8mb4_unicode_ci`
+- PHP extensions: `pdo_mysql`, `mbstring`, `gd` with WebP support, `fileinfo`, `intl`, `openssl`, `ctype`, `tokenizer`, and `xml`
+- For local asset builds only: Node.js and npm
+- For Apache hosting: `mod_rewrite`; `mod_headers`, `mod_expires`, and `mod_deflate` are recommended
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+The Composer platform is pinned to PHP 8.3.0 so dependency resolution stays compatible with PHP 8.3. Runtime cache and sessions use files, and the queue connection is synchronous.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Local development (Windows PowerShell)
 
-## Learning Laravel
+From the project directory:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+Set-Location C:\path\to\restaurant-menu-php
+Copy-Item .env.example .env
+composer install
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Edit `.env` with the local database credentials and set `ADMIN_USERNAME` and a unique `ADMIN_PASSWORD` of 12–128 characters. Keep `.env` private. Then create the schema and sample data:
 
-## Contributing
+```powershell
+php artisan migrate:fresh --seed
+npm ci
+npm run build
+php artisan menu:requirements
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+`migrate:fresh` drops all tables in the configured database. Use it only with a disposable local database. To start development, run `php artisan serve` and `npm run dev` in separate PowerShell windows.
 
-## Code of Conduct
+The local public web root defaults to the project's `public` directory. Leave `MENU_PUBLIC_ROOT` blank in `.env` for local development.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## QR code and phpMyAdmin SQL export
 
-## Security Vulnerabilities
+Set `PUBLIC_URL` to the permanent HTTPS URL before generating the QR code. The command writes `menu-qr.svg` and a 1200×1200 `menu-qr.png` in the project root:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```powershell
+php artisan menu:qr
+```
 
-## License
+Print at roughly 3–4 cm or larger with strong black-on-white contrast, and test the printed code with several phones.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To prepare an initial phpMyAdmin import, seed the local database using the intended initial admin username and password, then export:
+
+```powershell
+php artisan db:seed
+php artisan menu:install-sql --force
+```
+
+This creates `database/install.sql`. It includes the seeded admin's password hash and is excluded from Git. Keep and transfer it privately. The exported admin login only matches the username and password used to seed that local database. Never import this installation file over an existing production database: it drops and recreates the tables. For a production database update, use a separately prepared and tested migration SQL file.
+
+## Shared-hosting deployment
+
+### 1. Prepare the release locally
+
+1. Set `PUBLIC_URL` and `APP_URL` to the final HTTPS URL.
+2. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` to the initial admin credentials, then run `php artisan db:seed`.
+3. Generate the deployment SQL with `php artisan menu:install-sql --force`.
+4. Build frontend assets and production dependencies:
+
+   ```powershell
+   npm ci
+   npm run build
+   composer install --no-dev --optimize-autoloader --no-interaction
+   ```
+
+5. Generate an application key locally with `php artisan key:generate --show`. Put that key in the production `.env`; do not commit or publicly share it.
+
+### 2. Create and initialize the hosting database
+
+In cPanel or DirectAdmin, create a MySQL/MariaDB database and a database user with privileges on that database. Import the private `database/install.sql` file in phpMyAdmin. The export contains the schema, migration records, sample categories/products/settings, and the initial admin user.
+
+The SQL uses `utf8mb4` and `utf8mb4_unicode_ci`. Do not change the database to a newer MySQL-only collation.
+
+### 3. Upload the application outside the document root
+
+Use a private application directory next to, not inside, the web root. For example:
+
+```text
+/home/ACCOUNT/restaurant-menu-app/  (private application code)
+/home/ACCOUNT/public_html/          (Apache document root)
+```
+
+Upload the application code to `restaurant-menu-app`, including `app`, `bootstrap`, `config`, `database`, `resources`, `routes`, `storage`, `vendor`, `artisan`, `composer.json`, and `composer.lock`. Keep the project's `public` directory in the private app directory because Laravel reads the Vite manifest there. Also copy the **contents** of that `public` directory into `public_html`; the web root must contain `index.php`, `.htaccess`, `build`, `fonts`, `css`, `js`, `uploads`, `manifest.json`, and `sw.js` as applicable.
+
+Do not upload `.git`, `node_modules`, or `tests`. Do not place `.env`, `vendor`, `database`, or application source code inside `public_html`. Upload the generated `database/install.sql` only to a private location if it is still needed; remove it from the host after importing.
+
+Edit `public_html/index.php` to point to the private application directory. In all three paths in Laravel's front controller (maintenance file, Composer autoloader, and `bootstrap/app.php`), replace the default `__DIR__.'/../...'` prefix with the actual private app path. For the example layout above, the paths become:
+
+```php
+$appRoot = __DIR__.'/../restaurant-menu-app';
+
+if (file_exists($maintenance = $appRoot.'/storage/framework/maintenance.php')) {
+    require $maintenance;
+}
+
+require $appRoot.'/vendor/autoload.php';
+$app = require_once $appRoot.'/bootstrap/app.php';
+```
+
+Keep the remainder of Laravel's `public/index.php` unchanged. The `.htaccess` in `public_html` must be the project's hardened `public/.htaccess`.
+
+### 4. Configure the production environment
+
+Create `.env` in the private application directory, never in `public_html`. Start from `.env.example` and set at least:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.example
+PUBLIC_URL=https://your-domain.example
+APP_KEY=base64:the-key-generated-locally
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=your_database_user
+DB_PASSWORD=your_database_password
+DB_CHARSET=utf8mb4
+DB_COLLATION=utf8mb4_unicode_ci
+
+ADMIN_USERNAME=the-seeded-admin-username
+ADMIN_PASSWORD=the-initial-admin-password-used-for-the-SQL-export
+MENU_PUBLIC_ROOT=/home/ACCOUNT/public_html
+
+SESSION_DRIVER=file
+SESSION_SECURE_COOKIE=true
+SESSION_HTTP_ONLY=true
+SESSION_SAME_SITE=lax
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+```
+
+Use the actual absolute filesystem path for `MENU_PUBLIC_ROOT`. It directs image uploads and image deletion to the live web root's `uploads` directory rather than the private copy of `public`. Keep `storage` and `bootstrap/cache` writable by PHP; set directories to `755` and files to `644` where supported. Create `public_html/uploads` if it is absent and make it writable by PHP. Avoid `777`.
+
+Choose PHP 8.3 or newer in the hosting control panel and confirm all required extensions are enabled. The `.htaccess` file redirects HTTP to HTTPS while allowing ACME challenge requests, applies security headers, blocks private files and executable uploads, and configures compression and static asset caching. Enable SSL before accepting customer traffic.
+
+### 5. Verify the deployment
+
+- Open `/` and confirm the Persian menu and product images load.
+- Open `/admin`; a logged-out visitor should see the login page. Sign in with the seeded username/password.
+- Confirm the site has a valid HTTPS certificate and the service worker and manifest load from the same origin.
+- Use the browser Network panel on both the public page and `/admin` to verify every request stays on your domain.
+- Change a product in the admin and reload the public menu to confirm the cached page updates.
+
+The host does not need Node.js. `public/build` and all fonts, icons, and admin assets are compiled or bundled locally before upload. No queue worker, Redis, `storage:link`, or scheduler is required.
+
+## Backups and restores
+
+- Export the production database from phpMyAdmin before updates.
+- Download the complete `public_html/uploads` directory separately; it contains the processed WebP product and logo images.
+- To restore, import the database backup into the intended database and upload the matching `uploads` files. Keep the production `.env` and `APP_KEY` private and backed up separately.
+- `database/install.sql` is for first-time installation only; it drops tables and is not a production backup.
+
+## Updating the site
+
+1. Back up the database and `public_html/uploads`.
+2. Build the new frontend assets and run `composer install --no-dev --optimize-autoloader` locally.
+3. Upload the updated application files and the new contents of `public` while preserving the production `.env`, uploaded images, and writable `storage` data.
+4. If the release changes the database schema, prepare and test a version-specific SQL migration locally, then import that migration in phpMyAdmin after taking the backup. Do not import `database/install.sql` over live data.
+5. Verify `/`, `/admin`, image uploads, and the public menu cache after deployment.
+
+## Troubleshooting
+
+- **HTTP 500:** Check `storage/logs/laravel.log`, verify `.env` syntax and `APP_KEY`, confirm PHP 8.3+ and all required extensions, and ensure the web server can write to `storage`, `bootstrap/cache`, and `public_html/uploads`.
+- **Laravel files download or routes return 404:** Confirm `public_html` is the document root, the copied `index.php` paths point to the private app directory, and Apache `mod_rewrite` is enabled.
+- **403 or `.htaccess` error:** Check that the host allows `.htaccess` overrides and supports Apache 2.4 authorization rules. If the host uses a different web server, ask the provider to configure equivalent HTTPS redirects, rewrite rules, security headers, and sensitive-file protections.
+- **Images do not appear after upload:** Verify `MENU_PUBLIC_ROOT` is the absolute path to the live document root and that its `uploads` directory is writable by PHP.
+- **Assets look stale:** Ensure the latest contents of `public/build` were uploaded. The service worker script and manifest are configured not to retain stale versions.
+- **Login fails after SQL import:** Use the admin username/password that were present when `database/install.sql` was generated. Changing `ADMIN_PASSWORD` in `.env` alone does not change the imported database password hash.
+- **SQL import fails:** Confirm the hosting database is empty, the user has database privileges, and phpMyAdmin selected the correct schema. The generated SQL is intended for MySQL/MariaDB.
+
+## Assumptions
+
+- The production host provides Apache-compatible `.htaccess` support, PHP 8.3+, and MySQL/MariaDB. A host using Nginx or another web server must configure equivalent rules in its server configuration.
+- The hosting account allows PHP to write to the configured document root's `uploads` directory.
+- Browser-level visual comparison on 360–430px screens and offline testing must be performed on the eventual production-equivalent host and devices.

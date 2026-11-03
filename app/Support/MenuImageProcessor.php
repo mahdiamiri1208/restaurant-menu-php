@@ -107,7 +107,8 @@ class MenuImageProcessor
             throw new RuntimeException('GD could not resize the uploaded image.');
         }
 
-        $directory = public_path('uploads');
+        $webRoot = rtrim((string) config('menu.web_root', public_path()), DIRECTORY_SEPARATOR);
+        $directory = $webRoot.DIRECTORY_SEPARATOR.'uploads';
 
         if (! is_dir($directory) && ! mkdir($directory, 0755, true) && ! is_dir($directory)) {
             throw new RuntimeException('The public uploads directory could not be created.');
@@ -154,7 +155,8 @@ class MenuImageProcessor
             throw new RuntimeException('Refusing to delete an invalid menu image path.');
         }
 
-        $path = public_path('uploads'.DIRECTORY_SEPARATOR.$filename);
+        $webRoot = rtrim((string) config('menu.web_root', public_path()), DIRECTORY_SEPARATOR);
+        $path = $webRoot.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.$filename;
 
         if (is_file($path) && ! unlink($path)) {
             throw new RuntimeException('The replaced menu image could not be deleted.');
