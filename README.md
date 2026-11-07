@@ -14,27 +14,23 @@ The Composer platform is pinned to PHP 8.3.0 so dependency resolution stays comp
 
 ## Local development (Windows PowerShell)
 
-From the project directory:
+The local Apache VirtualHost points directly to this checkout's `public` directory. Run this once from PowerShell to configure the XAMPP Apache VirtualHost and PHP OPcache timestamp checks (elevate only if Windows denies access):
 
 ```powershell
-Set-Location C:\path\to\restaurant-menu-php
-Copy-Item .env.example .env
-composer install
-php artisan key:generate
+.\configure-apache.ps1
 ```
 
-Edit `.env` with the local database credentials and set `ADMIN_USERNAME` and a unique `ADMIN_PASSWORD` of 12–128 characters. Keep `.env` private. Then create the schema and sample data:
+Then, from the project directory, start the local environment:
 
 ```powershell
-php artisan migrate:fresh --seed
-npm ci
-npm run build
-php artisan menu:requirements
+.\dev.ps1
 ```
 
-`migrate:fresh` drops all tables in the configured database. Use it only with a disposable local database. To start development, run `php artisan serve` and `npm run dev` in separate PowerShell windows.
+The script checks/starts XAMPP Apache and MySQL, clears Laravel's config, route, compiled-view, and file-application caches, verifies the existing MySQL connection, and starts Vite. It does not run migrations, seeders, or a production build. Open [http://localhost](http://localhost). Keep the `.env` database settings and `APP_KEY` private and unchanged.
 
-The local public web root defaults to the project's `public` directory. Leave `MENU_PUBLIC_ROOT` blank in `.env` for local development.
+Blade and PHP changes appear on the next request; Blade edits also trigger a browser refresh. CSS and JavaScript use Vite HMR at `http://127.0.0.1:5173`. Press Ctrl+C in the development window to stop Vite; Apache and MySQL remain running. Do not run `npm run build` for normal development.
+
+The local `.env` should use `APP_ENV=local`, `APP_DEBUG=true`, and `APP_URL=http://localhost`. The public-menu HTML cache and service worker are bypassed/removed in local mode only; production caching and service-worker behavior remain enabled.
 
 ## QR code and phpMyAdmin SQL export
 

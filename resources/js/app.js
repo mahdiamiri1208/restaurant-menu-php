@@ -102,6 +102,21 @@ if (menu) {
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+        if (import.meta.env.DEV) {
+            Promise.all([
+                navigator.serviceWorker.getRegistrations()
+                    .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister()))),
+                caches.keys()
+                    .then((names) => Promise.all(names
+                        .filter((name) => name.startsWith('restaurant-menu-'))
+                        .map((name) => caches.delete(name)))),
+            ]).catch((error) => {
+                console.error('Development service worker cleanup failed.', error);
+            });
+
+            return;
+        }
+
         navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch((error) => {
             console.error('Service worker registration failed.', error);
         });

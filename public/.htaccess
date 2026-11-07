@@ -7,6 +7,7 @@
 
     # Keep HTTP-01 certificate validation reachable before HTTPS is configured.
     RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
     RewriteCond %{HTTPS} !=on
     RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
     RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [R=301,L]

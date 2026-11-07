@@ -13,6 +13,10 @@ class CachePublicMenu
 
     public function handle(Request $request, Closure $next): Response
     {
+        if (app()->isLocal()) {
+            return $next($request);
+        }
+
         $version = $this->cache->version($request->getSchemeAndHttpHost());
         $cached = $this->cache->get($version);
 

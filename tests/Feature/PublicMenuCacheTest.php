@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Settings;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 class PublicMenuCacheTest extends TestCase
@@ -101,6 +102,7 @@ class PublicMenuCacheTest extends TestCase
     public function test_cache_entries_are_separated_by_request_origin(): void
     {
         config(['cache.stores.file' => ['driver' => 'array']]);
+        Vite::useHotFile(storage_path('framework/testing-hot'));
         $this->createMenuFixture();
 
         $firstResponse = $this->get('https://first.example');
@@ -149,6 +151,22 @@ class PublicMenuCacheTest extends TestCase
             app()->usePublicPath($originalPublicPath);
             \Illuminate\Support\Facades\File::deleteDirectory($temporaryPublicPath);
         }
+    }
+
+    public function test_local_development_bypasses_cached_html(): void
+    {
+        $this->app->detectEnvironment(static fn (): string => 'local');
+        config(['cache.stores.file' => ['driver' => 'array']]);
+        $this->createMenuFixture();
+
+        $cache = app(PublicMenuCache::class);
+        $version = $cache->version('https://restaurant.example');
+        $cache->put($version, '<html>stale menu</html>', '"stale"');
+
+        $this->get('https://restaurant.example')
+            ->assertOk()
+            ->assertSee('Cache test product')
+            ->assertDontSee('stale menu');
     }
 
     private function createMenuFixture(): void
