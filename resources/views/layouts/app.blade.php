@@ -9,6 +9,15 @@
     <title>@yield('title', 'منوی رستوران نارنج')</title>
     <meta name="description" content="منوی دیجیتال رستوران نارنج">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <style>
+        @font-face {
+            font-family: "Vazirmatn";
+            src: url("{{ asset('fonts/vazirmatn.woff2') }}") format("woff2");
+            font-style: normal;
+            font-weight: 100 900;
+            font-display: swap;
+        }
+    </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
