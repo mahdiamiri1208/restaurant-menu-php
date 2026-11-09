@@ -73,15 +73,15 @@
     }
 
     .category-icon-option.is-selected {
-        border: 2px solid var(--fi-color-primary-600);
-        background: color-mix(in srgb, var(--fi-color-primary-500) 20%, var(--fi-color-white));
+        border-color: var(--fi-color-primary-600);
+        background: color-mix(in srgb, var(--fi-color-primary-500) 9%, var(--fi-color-white));
         box-shadow: 0 0 0 1px color-mix(in srgb, var(--fi-color-primary-500) 24%, transparent);
         color: var(--fi-color-primary-700);
     }
 
     .dark .category-icon-option.is-selected {
         border-color: var(--fi-color-primary-400);
-        background: color-mix(in srgb, var(--fi-color-primary-500) 20%, var(--fi-color-gray-950));
+        background: color-mix(in srgb, var(--fi-color-primary-500) 14%, var(--fi-color-gray-950));
         color: var(--fi-color-primary-300);
     }
 
@@ -106,11 +106,7 @@
     .category-icon-art {
         display: grid;
         place-items: center;
-        color: var(--fi-color-primary-600);
-    }
-
-    .dark .category-icon-art {
-        color: var(--fi-color-primary-400);
+        color: inherit;
     }
 
     .category-icon-option.is-selected .category-icon-art {
