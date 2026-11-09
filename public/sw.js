@@ -1,5 +1,5 @@
-const CACHE_NAME = 'restaurant-menu-v2';
-const MENU_URL = '/';
+const CACHE_NAME = 'restaurant-menu-v3';
+const MENU_URL = '/menu';
 
 self.addEventListener('install', (event) => {
     event.waitUntil((async () => {

@@ -14,6 +14,12 @@ class PublicMenuTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_the_root_redirects_to_the_public_menu(): void
+    {
+        $this->get('/')
+            ->assertRedirect('/menu');
+    }
+
     public function test_it_renders_seeded_menu_data_and_hides_inactive_categories(): void
     {
         config(['cache.stores.file' => ['driver' => 'array']]);
@@ -28,7 +34,7 @@ class PublicMenuTest extends TestCase
 
         app(PublicMenuCache::class)->invalidate();
 
-        $this->get('/')
+        $this->get('/menu')
             ->assertOk()
             ->assertSee('پیش‌غذا')
             ->assertSee('سالاد سزار')
@@ -42,7 +48,7 @@ class PublicMenuTest extends TestCase
             $queries++;
         });
 
-        $this->get('/')->assertOk();
+        $this->get('/menu')->assertOk();
 
         self::assertSame(0, $queries);
     }

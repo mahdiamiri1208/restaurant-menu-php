@@ -105,13 +105,25 @@ class PublicMenuCacheTest extends TestCase
         Vite::useHotFile(storage_path('framework/testing-hot'));
         $this->createMenuFixture();
 
-        $firstResponse = $this->get('https://first.example');
+        $firstResponse = $this->get('https://first.example/menu');
         $firstResponse->assertOk()->assertSee('https://first.example/build/assets/');
 
-        $secondResponse = $this->get('https://second.example');
+        $secondResponse = $this->get('https://second.example/menu');
         $secondResponse->assertOk()
             ->assertSee('https://second.example/build/assets/')
             ->assertDontSee('https://first.example/build/assets/');
+    }
+
+    public function test_cache_entries_are_separated_by_request_path(): void
+    {
+        config(['cache.stores.file' => ['driver' => 'array']]);
+
+        $cache = app(PublicMenuCache::class);
+
+        self::assertNotSame(
+            $cache->version('https://restaurant.example', '/menu'),
+            $cache->version('https://restaurant.example', '/'),
+        );
     }
 
     public function test_a_changed_vite_manifest_fingerprint_rebuilds_cached_html(): void
@@ -134,14 +146,14 @@ class PublicMenuCacheTest extends TestCase
 
         try {
             app()->usePublicPath($firstBuildPath);
-            $firstResponse = $this->get('https://restaurant.example');
+            $firstResponse = $this->get('https://restaurant.example/menu');
             $firstResponse->assertOk();
             $firstHtml = $firstResponse->getContent();
 
             preg_match('/<link[^>]+href="([^"]+app-[^"]+\\.css)"/', $firstHtml, $firstAsset);
 
             app()->usePublicPath($secondBuildPath);
-            $secondResponse = $this->get('https://restaurant.example');
+            $secondResponse = $this->get('https://restaurant.example/menu');
             $secondResponse->assertOk()->assertSee('https://restaurant.example/build/assets/app-updated.css');
             preg_match('/<link[^>]+href="([^"]+app-[^"]+\\.css)"/', $secondResponse->getContent(), $secondAsset);
 
@@ -163,7 +175,7 @@ class PublicMenuCacheTest extends TestCase
         $version = $cache->version('https://restaurant.example');
         $cache->put($version, '<html>stale menu</html>', '"stale"');
 
-        $this->get('https://restaurant.example')
+        $this->get('https://restaurant.example/menu')
             ->assertOk()
             ->assertSee('Cache test product')
             ->assertDontSee('stale menu');

@@ -26,7 +26,7 @@ Then, from the project directory, start the local environment:
 .\dev.ps1
 ```
 
-The script checks/starts XAMPP Apache and MySQL, clears Laravel's config, route, compiled-view, and file-application caches, verifies the existing MySQL connection, and starts Vite. It does not run migrations, seeders, or a production build. Open [http://localhost](http://localhost). Keep the `.env` database settings and `APP_KEY` private and unchanged.
+The script checks/starts XAMPP Apache and MySQL, clears Laravel's config, route, compiled-view, and file-application caches, verifies the existing MySQL connection, and starts Vite. It does not run migrations, seeders, or a production build. Open [http://localhost/menu](http://localhost/menu). Keep the `.env` database settings and `APP_KEY` private and unchanged.
 
 Blade and PHP changes appear on the next request; Blade edits also trigger a browser refresh. CSS and JavaScript use Vite HMR at `http://127.0.0.1:5173`. Press Ctrl+C in the development window to stop Vite; Apache and MySQL remain running. Do not run `npm run build` for normal development.
 
@@ -34,7 +34,7 @@ The local `.env` should use `APP_ENV=local`, `APP_DEBUG=true`, and `APP_URL=http
 
 ## QR code and phpMyAdmin SQL export
 
-Set `PUBLIC_URL` to the permanent HTTPS URL before generating the QR code. The command writes `menu-qr.svg` and a 1200×1200 `menu-qr.png` in the project root:
+Set `PUBLIC_URL` to the permanent HTTPS menu URL (for example, `https://your-domain.example/menu`) before generating the QR code. The command writes `menu-qr.svg` and a 1200×1200 `menu-qr.png` in the project root. If `PUBLIC_URL` is set to the domain root, the command targets `/menu` automatically:
 
 ```powershell
 php artisan menu:qr
@@ -55,7 +55,7 @@ This creates `database/install.sql`. It includes the seeded admin's password has
 
 ### 1. Prepare the release locally
 
-1. Set `PUBLIC_URL` and `APP_URL` to the final HTTPS URL.
+1. Set `PUBLIC_URL` to `https://your-domain.example/menu` and `APP_URL` to `https://your-domain.example`.
 2. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` to the initial admin credentials, then run `php artisan db:seed`.
 3. Generate the deployment SQL with `php artisan menu:install-sql --force`.
 4. Build frontend assets and production dependencies:
@@ -110,7 +110,7 @@ Create `.env` in the private application directory, never in `public_html`. Star
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://your-domain.example
-PUBLIC_URL=https://your-domain.example
+PUBLIC_URL=https://your-domain.example/menu
 APP_KEY=base64:the-key-generated-locally
 
 DB_CONNECTION=mysql
@@ -136,11 +136,11 @@ QUEUE_CONNECTION=sync
 
 Use the actual absolute filesystem path for `MENU_PUBLIC_ROOT`. It directs image uploads and image deletion to the live web root's `uploads` directory rather than the private copy of `public`. Keep `storage` and `bootstrap/cache` writable by PHP; set directories to `755` and files to `644` where supported. Create `public_html/uploads` if it is absent and make it writable by PHP. Avoid `777`.
 
-Choose PHP 8.3 or newer in the hosting control panel and confirm all required extensions are enabled. The `.htaccess` file redirects HTTP to HTTPS while allowing ACME challenge requests, applies security headers, blocks private files and executable uploads, and configures compression and static asset caching. Enable SSL before accepting customer traffic.
+Choose PHP 8.3 or newer in the hosting control panel and confirm all required extensions are enabled. The cPanel deployment `.htaccess` must put Laravel's rewrite rules before the cPanel-generated PHP directives and handler. The project's `public/.htaccess` also includes HTTPS redirects, security headers, private-file protections, compression, and static asset caching. Enable SSL before accepting customer traffic.
 
 ### 5. Verify the deployment
 
-- Open `/` and confirm the Persian menu and product images load.
+- Open `/menu` and confirm the Persian menu and product images load; `/` should redirect to `/menu`.
 - Open `/admin`; a logged-out visitor should see the login page. Sign in with the seeded username/password.
 - Confirm the site has a valid HTTPS certificate and the service worker and manifest load from the same origin.
 - Use the browser Network panel on both the public page and `/admin` to verify every request stays on your domain.
@@ -162,9 +162,9 @@ The host does not need Node.js. `public/build` and all fonts, icons, and admin a
 3. Upload the updated application files and the new contents of `public` while preserving the production `.env`, uploaded images, and writable `storage` data.
 4. Clear the application cache after uploading the new build. If SSH is available, run `php artisan cache:clear` from the private application directory. Otherwise, in the hosting file manager, delete the files inside `storage/framework/cache/data` without deleting the directory itself.
 5. If the release changes the database schema, prepare and test a version-specific SQL migration locally, then import that migration in phpMyAdmin after taking the backup. Do not import `database/install.sql` over live data.
-6. Verify `/`, `/admin`, image uploads, and the public menu cache after deployment.
+6. Verify `/menu`, the `/` redirect, `/admin`, image uploads, and the public menu cache after deployment.
 
-The public menu cache is also separated by request scheme/host/port and automatically rebuilds when the Vite manifest fingerprint or service-worker cache version changes. Clearing the Laravel cache after deployment remains a safe precaution, especially when using file caches copied or retained between releases.
+The public menu cache is separated by request scheme, host, port, and path (`/menu`), and automatically rebuilds when the Vite manifest fingerprint or service-worker cache version changes. Clearing the Laravel cache after deployment remains a safe precaution, especially when using file caches copied or retained between releases.
 
 ## Troubleshooting
 

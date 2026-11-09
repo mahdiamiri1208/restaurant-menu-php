@@ -15,7 +15,7 @@ final class PublicMenuCache
 
     private const ORIGINS_KEY = 'public-menu:origins';
 
-    public function version(string $origin): string
+    public function version(string $origin, string $path = '/menu'): string
     {
         $store = $this->store();
         $generation = $store->get(self::VERSION_KEY);
@@ -27,11 +27,12 @@ final class PublicMenuCache
 
         $version = hash('sha256', implode("\0", [
             $origin,
+            $path,
             $this->manifestFingerprint(),
             $this->serviceWorkerCacheVersion(),
             $generation,
         ]));
-        $originKey = hash('sha256', $origin);
+        $originKey = hash('sha256', $origin."\0".$path);
         $origins = $store->get(self::ORIGINS_KEY, []);
 
         if (! is_array($origins)) {

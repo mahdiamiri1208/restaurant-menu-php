@@ -17,7 +17,7 @@ class CachePublicMenu
             return $next($request);
         }
 
-        $version = $this->cache->version($request->getSchemeAndHttpHost());
+        $version = $this->cache->version($request->getSchemeAndHttpHost(), $request->getPathInfo());
         $cached = $this->cache->get($version);
 
         if ($cached !== null) {

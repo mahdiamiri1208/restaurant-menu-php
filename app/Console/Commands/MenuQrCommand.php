@@ -34,6 +34,24 @@ class MenuQrCommand extends Command
             return self::FAILURE;
         }
 
+        if (($parts['path'] ?? '') !== '/menu') {
+            $url = $parts['scheme'].'://'.$parts['host'];
+
+            if (isset($parts['port'])) {
+                $url .= ':'.$parts['port'];
+            }
+
+            $url .= '/menu';
+
+            if (isset($parts['query'])) {
+                $url .= '?'.$parts['query'];
+            }
+
+            if (isset($parts['fragment'])) {
+                $url .= '#'.$parts['fragment'];
+            }
+        }
+
         if (! extension_loaded('gd') || ! function_exists('imagepng')) {
             $this->error('The GD extension is required to generate the PNG QR code.');
 
