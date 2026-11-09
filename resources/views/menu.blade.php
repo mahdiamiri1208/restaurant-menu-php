@@ -70,6 +70,5 @@
         </div>
         <footer class="menu-footer">مواد اولیه تازه، هر روز در نارنج</footer>
     </div>
-    <aside class="waiter-bar"><span class="bell-disc">@include('partials.menu-icon', ['name' => 'bell', 'size' => 19])</span><span>سفارش خود را به گارسون اعلام کنید</span><span class="waiter-dot"></span></aside>
 </main>
 @endsection

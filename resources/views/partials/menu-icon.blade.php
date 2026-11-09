@@ -13,9 +13,6 @@
         @case('leaf')
             <path d="M20.5 3.5C12 3.5 5 5.2 5 12.1c0 3 2 5.2 4.8 5.2 6.8 0 9.5-6.4 10.7-13.8Z"></path><path d="M3.5 21c3-5.3 6.6-8.5 11.6-11.4"></path>
             @break
-        @case('bell')
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"></path>
-            @break
         @default
             <path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5v-7Z"></path><path d="m4.5 8.8 7.5 4.3 7.5-4.3M12 13v7"></path>
     @endswitch
