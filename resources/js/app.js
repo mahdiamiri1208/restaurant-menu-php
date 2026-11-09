@@ -98,6 +98,122 @@ if (menu) {
     }, { rootMargin: '-25% 0px -65% 0px', threshold: [0, 0.2, 0.5] });
 
     sections.forEach((section) => observer.observe(section));
+
+    const lightbox = document.querySelector('[data-image-lightbox]');
+    const lightboxImage = lightbox?.querySelector('[data-lightbox-image]');
+    const lightboxClose = lightbox?.querySelector('[data-lightbox-close]');
+
+    if (lightbox && lightboxImage && lightboxClose) {
+        let scrollPosition = null;
+        let previousBodyStyles = null;
+        let previousFocus = null;
+        let closeTimer = null;
+
+        const restorePage = () => {
+            if (!previousBodyStyles || !scrollPosition) {
+                return;
+            }
+
+            const body = document.body;
+            body.style.position = previousBodyStyles.position;
+            body.style.top = previousBodyStyles.top;
+            body.style.left = previousBodyStyles.left;
+            body.style.width = previousBodyStyles.width;
+            body.style.overflow = previousBodyStyles.overflow;
+
+            window.scrollTo(scrollPosition.x, scrollPosition.y);
+            previousBodyStyles = null;
+            scrollPosition = null;
+
+            if (previousFocus?.isConnected) {
+                previousFocus.focus({ preventScroll: true });
+            }
+            previousFocus = null;
+        };
+
+        const finishClose = () => {
+            if (!lightbox.hidden && !lightbox.classList.contains('is-open')) {
+                lightbox.hidden = true;
+                lightboxImage.removeAttribute('src');
+                restorePage();
+            }
+        };
+
+        const closeLightbox = () => {
+            if (lightbox.hidden || !lightbox.classList.contains('is-open')) {
+                return;
+            }
+
+            lightbox.classList.remove('is-open');
+            lightbox.setAttribute('aria-hidden', 'true');
+            window.clearTimeout(closeTimer);
+            closeTimer = window.setTimeout(finishClose, 300);
+        };
+
+        const openLightbox = (image) => {
+            if (!lightbox.hidden) {
+                return;
+            }
+
+            window.clearTimeout(closeTimer);
+            previousFocus = document.activeElement;
+            scrollPosition = { x: window.scrollX, y: window.scrollY };
+            const body = document.body;
+            previousBodyStyles = {
+                position: body.style.position,
+                top: body.style.top,
+                left: body.style.left,
+                width: body.style.width,
+                overflow: body.style.overflow,
+            };
+
+            lightboxImage.src = image.currentSrc || image.src;
+            lightboxImage.alt = image.alt;
+            body.style.position = 'fixed';
+            body.style.top = `-${scrollPosition.y}px`;
+            body.style.left = `-${scrollPosition.x}px`;
+            body.style.width = '100%';
+            body.style.overflow = 'hidden';
+            lightbox.hidden = false;
+            lightbox.setAttribute('aria-hidden', 'false');
+            window.requestAnimationFrame(() => lightbox.classList.add('is-open'));
+            lightboxClose.focus({ preventScroll: true });
+        };
+
+        menu.addEventListener('click', (event) => {
+            const image = event.target.closest('[data-product-image]');
+
+            if (image && menu.contains(image)) {
+                openLightbox(image);
+            }
+        });
+
+        menu.addEventListener('keydown', (event) => {
+            if ((event.key === 'Enter' || event.key === ' ') &&
+                event.target.matches('[data-product-image]')) {
+                event.preventDefault();
+                openLightbox(event.target);
+            }
+        });
+
+        lightbox.addEventListener('click', (event) => {
+            if (!event.target.closest('[data-lightbox-image]')) {
+                closeLightbox();
+            }
+        });
+
+        lightbox.addEventListener('transitionend', (event) => {
+            if (event.target === lightbox && event.propertyName === 'opacity') {
+                finishClose();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    }
 }
 
 if ('serviceWorker' in navigator) {

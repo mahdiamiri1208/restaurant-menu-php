@@ -38,7 +38,7 @@ class ManageSettings extends Page
             'phone',
             'address',
         ]) ?? [
-            'restaurant_name' => 'رستوران نارنج',
+            'restaurant_name' => 'پاریس لانژ',
             'logo_url' => null,
             'phone' => null,
             'address' => null,

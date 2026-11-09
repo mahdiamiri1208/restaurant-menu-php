@@ -7,34 +7,37 @@ $ErrorActionPreference = 'Stop'
 $apache = Join-Path $XamppRoot 'apache\bin\httpd.exe'
 $httpdConf = Join-Path $XamppRoot 'apache\conf\httpd.conf'
 $vhostsConf = Join-Path $XamppRoot 'apache\conf\extra\httpd-vhosts.conf'
+$sslConf = Join-Path $XamppRoot 'apache\conf\extra\httpd-ssl.conf'
 $phpIni = Join-Path $XamppRoot 'php\php.ini'
 $apacheDirectory = Join-Path $XamppRoot 'apache'
 $projectPublic = (Resolve-Path (Join-Path $PSScriptRoot 'public')).Path.Replace('\', '/')
 
-function Test-ListeningPort([int] $Port) {
+function Get-LocalApacheProcesses {
+    return @(Get-CimInstance Win32_Process |
+        Where-Object { $_.ExecutablePath -and $_.ExecutablePath -ieq $apache })
+}
+
+function Test-ApacheListeningPort([int] $Port) {
+    $apacheProcessIds = @(Get-LocalApacheProcesses | Select-Object -ExpandProperty ProcessId)
+    if ($apacheProcessIds.Count -eq 0) {
+        return $false
+    }
+
     return [bool](Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue |
+        Where-Object { $apacheProcessIds -contains $_.OwningProcess } |
         Select-Object -First 1)
 }
 
 function Stop-LocalApache {
-    $listeners = @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
-        Where-Object { $_.LocalPort -in 80, 443 })
-    if ($listeners.Count -eq 0) {
+    $apacheProcesses = @(Get-LocalApacheProcesses)
+    $apacheProcessIds = @($apacheProcesses | Select-Object -ExpandProperty ProcessId)
+    if ($apacheProcessIds.Count -eq 0) {
         return
     }
 
-    $apacheProcesses = @(Get-CimInstance Win32_Process |
-        Where-Object { $_.ExecutablePath -and $_.ExecutablePath -ieq $apache })
-    $listenerIds = @($listeners | Select-Object -ExpandProperty OwningProcess -Unique)
-    foreach ($listenerId in $listenerIds) {
-        if (-not ($apacheProcesses.ProcessId -contains $listenerId)) {
-            throw "Port 80/443 is held by a process other than this XAMPP Apache (PID $listenerId)."
-        }
-    }
-
     $targetIds = [System.Collections.Generic.List[int]]::new()
-    foreach ($listenerId in $listenerIds) {
-        $targetIds.Add([int] $listenerId)
+    foreach ($processId in $apacheProcessIds) {
+        $targetIds.Add([int] $processId)
     }
 
     $added = $true
@@ -56,7 +59,7 @@ function Stop-LocalApache {
     }
 
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
-        if (-not (Test-ListeningPort 80)) {
+        if (-not (Get-LocalApacheProcesses)) {
             return
         }
         Start-Sleep -Milliseconds 250
@@ -72,16 +75,16 @@ function Start-LocalApache {
         -WindowStyle Hidden
 
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
-        if (Test-ListeningPort 80) {
+        if ((Test-ApacheListeningPort 80) -and (Test-ApacheListeningPort 443)) {
             return
         }
         Start-Sleep -Milliseconds 250
     }
 
-    throw 'Apache did not start listening on port 80.'
+    throw 'Apache did not start listening on ports 80 and 443.'
 }
 
-foreach ($path in @($apache, $httpdConf, $vhostsConf, $phpIni)) {
+foreach ($path in @($apache, $httpdConf, $vhostsConf, $sslConf, $phpIni)) {
     if (-not (Test-Path $path -PathType Leaf)) {
         throw "Required XAMPP file not found: $path"
     }
@@ -104,6 +107,44 @@ $vhostBlock = @"
 # END restaurant-menu-php local development
 "@
 $newVhosts = $vhostsWithoutBlock.TrimEnd() + [Environment]::NewLine + $vhostBlock + [Environment]::NewLine
+
+$originalSsl = [System.IO.File]::ReadAllText($sslConf, [System.Text.Encoding]::Default)
+$sslVhostPattern = '(?s)(<VirtualHost\s+_default_:443\s*>)(.*?)(</VirtualHost>)'
+$sslVhostMatches = [System.Text.RegularExpressions.Regex]::Matches($originalSsl, $sslVhostPattern)
+if ($sslVhostMatches.Count -ne 1) {
+    throw 'Expected exactly one _default_:443 virtual host in httpd-ssl.conf.'
+}
+
+$sslMarkerPattern = '(?ms)^[ \t]*# BEGIN restaurant-menu-php local development\r?\n.*?^[ \t]*# END restaurant-menu-php local development\r?\n?'
+$sslVhostContent = [System.Text.RegularExpressions.Regex]::Replace(
+    $sslVhostMatches[0].Groups[2].Value,
+    $sslMarkerPattern,
+    ''
+)
+$sslDocumentRootPattern = '(?m)^[ \t]*DocumentRoot[ \t]+"[^"]+"[ \t]*\r?$'
+if ([System.Text.RegularExpressions.Regex]::Matches($sslVhostContent, $sslDocumentRootPattern).Count -ne 1) {
+    throw 'Expected exactly one DocumentRoot in the _default_:443 virtual host.'
+}
+$sslDirectoryBlock = @"
+# BEGIN restaurant-menu-php local development
+<Directory "$projectPublic">
+    Options FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
+# END restaurant-menu-php local development
+"@
+$sslVhostContent = ([System.Text.RegularExpressions.Regex]::new($sslDocumentRootPattern)).Replace(
+    $sslVhostContent,
+    "DocumentRoot `"$projectPublic`"`r`n$sslDirectoryBlock",
+    1
+)
+$newSsl = [System.Text.RegularExpressions.Regex]::Replace(
+    $originalSsl,
+    $sslVhostPattern,
+    ('$1' + $sslVhostContent + '$3'),
+    1
+)
 
 $originalIni = [System.IO.File]::ReadAllText($phpIni, [System.Text.Encoding]::Default)
 $newIni = $originalIni
@@ -133,10 +174,11 @@ foreach ($name in $opcacheSettings.Keys) {
     }
 }
 
-$apacheWasRunning = Test-ListeningPort 80
+$apacheWasRunning = (Test-ApacheListeningPort 80) -or (Test-ApacheListeningPort 443)
 $apacheStopped = $false
 try {
     [System.IO.File]::WriteAllText($vhostsConf, $newVhosts, [System.Text.Encoding]::Default)
+    [System.IO.File]::WriteAllText($sslConf, $newSsl, [System.Text.Encoding]::Default)
     [System.IO.File]::WriteAllText($phpIni, $newIni, [System.Text.Encoding]::Default)
 
     $previousErrorActionPreference = $ErrorActionPreference
@@ -161,6 +203,7 @@ try {
 }
 catch {
     [System.IO.File]::WriteAllText($vhostsConf, $originalVhosts, [System.Text.Encoding]::Default)
+    [System.IO.File]::WriteAllText($sslConf, $originalSsl, [System.Text.Encoding]::Default)
     [System.IO.File]::WriteAllText($phpIni, $originalIni, [System.Text.Encoding]::Default)
 
     if ($apacheStopped) {
@@ -176,7 +219,7 @@ catch {
     throw
 }
 
-Write-Host "Apache now serves $projectPublic at http://localhost"
+Write-Host "Apache now serves $projectPublic at http://localhost and https://localhost"
 Write-Host 'PHP OPcache timestamp validation is enabled with a zero-second recheck interval.'
 if (-not $apacheWasRunning) {
     Write-Host 'Apache is not running; start it with .\dev.ps1.'

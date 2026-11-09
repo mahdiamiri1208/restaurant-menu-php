@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('مدیریت رستوران')
+            ->brandName('Paris Lounge | پاریس لانژ')
             ->login(Login::class)
             ->font('Vazirmatn', asset('css/filament-font.css'), LocalFontProvider::class)
             ->colors([

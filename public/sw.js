@@ -1,4 +1,4 @@
-const CACHE_NAME = 'restaurant-menu-v3';
+const CACHE_NAME = 'restaurant-menu-v4';
 const MENU_URL = '/menu';
 
 self.addEventListener('install', (event) => {

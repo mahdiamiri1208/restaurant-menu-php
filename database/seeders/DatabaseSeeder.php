@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
         $settings = Settings::query()->firstOrCreate(
             ['id' => 1],
             [
-                'restaurant_name' => 'رستوران نارنج',
+                'restaurant_name' => 'پاریس لانژ',
                 'phone' => '021-00000000',
                 'address' => 'تهران',
             ],

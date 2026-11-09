@@ -24,9 +24,9 @@
             <input type="search" placeholder="جستجو در منو..." aria-label="جستجو در منو" tabindex="-1" data-search-input>
         </div>
         <nav class="category-rail" aria-label="دسته‌بندی منو">
-            <button type="button" class="category-chip active" aria-pressed="true" data-category-chip="all"><span class="category-symbol" aria-hidden="true">✦</span>همه</button>
+            <button type="button" class="category-chip active" aria-pressed="true" data-category-chip="all"><span class="category-symbol" aria-hidden="true">{{ \App\Support\MenuCategoryIcon::render('sparkles') }}</span>همه</button>
             @foreach($categories as $category)
-                <button type="button" class="category-chip" aria-pressed="false" data-category-chip="{{ $category['id'] }}"><span class="category-symbol" aria-hidden="true">{{ $category['symbol'] }}</span>{{ $category['name'] }}</button>
+                <button type="button" class="category-chip" aria-pressed="false" data-category-chip="{{ $category['id'] }}"><span class="category-symbol" aria-hidden="true">{{ \App\Support\MenuCategoryIcon::render($category['icon']) }}</span>{{ $category['name'] }}</button>
             @endforeach
         </nav>
         <section class="menu-intro" data-category="all"><p>منوی امروز</p><span>با عشق آماده شده برای شما</span></section>
@@ -34,17 +34,27 @@
             @foreach($categories as $category)
                 @php($items = $products->where('category_id', $category['id'])->values())
                 <section class="menu-section" id="section-{{ $category['id'] }}" data-category="{{ $category['id'] }}">
-                    <div class="section-heading"><span class="section-icon" aria-hidden="true">{{ $category['symbol'] }}</span><h2>{{ $category['name'] }}</h2><span class="section-count" data-section-count>{{ \App\Support\MenuFormatter::toman($items->count()) }} مورد</span></div>
+                    <div class="section-heading"><span class="section-icon" aria-hidden="true">{{ \App\Support\MenuCategoryIcon::render($category['icon']) }}</span><h2>{{ $category['name'] }}</h2><span class="section-count" data-section-count>{{ \App\Support\MenuFormatter::toman($items->count()) }} مورد</span></div>
                     <div class="product-list">
                         @foreach($items as $product)
                             <article class="product-card{{ $product['available'] ? '' : ' product-unavailable' }}" data-product data-name="{{ mb_strtolower($product['name'], 'UTF-8') }}">
-                                <div class="product-art art-{{ $product['color'] }}" aria-hidden="true">
+                                <div class="product-art art-{{ $product['color'] }}">
                                     @if($product['image_url'])
-                                        <img src="{{ $product['image_url'] }}" alt="" width="112" height="112" loading="lazy">
+                                        <img
+                                            src="{{ $product['image_url'] }}"
+                                            alt="{{ $product['name'] }}"
+                                            width="112"
+                                            height="112"
+                                            loading="lazy"
+                                            data-product-image
+                                            role="button"
+                                            tabindex="0"
+                                            aria-label="نمایش تصویر بزرگ‌تر: {{ $product['name'] }}"
+                                        >
                                     @else
-                                        <span class="product-placeholder-icon">{{ $product['category_symbol'] }}</span>
+                                        <span class="product-placeholder-icon" aria-hidden="true">{{ \App\Support\MenuCategoryIcon::render($product['category_icon']) }}</span>
                                     @endif
-                                    <span class="art-glint"></span>
+                                    <span class="art-glint" aria-hidden="true"></span>
                                 </div>
                                 <div class="product-info">
                                     <div class="product-title-line"><h3>{{ $product['name'] }}</h3>@if($product['discount_percent'])<span class="discount-badge">٪{{ \App\Support\MenuFormatter::toman($product['discount_percent']) }}</span>@endif</div>
@@ -68,7 +78,23 @@
             @endforeach
             <p class="empty-results" hidden data-empty-results>موردی با این نام پیدا نشد.</p>
         </div>
-        <footer class="menu-footer">مواد اولیه تازه، هر روز در نارنج</footer>
+        <footer class="menu-footer">مواد اولیه تازه، هر روز در پاریس لانژ</footer>
     </div>
 </main>
+<div
+    class="image-lightbox"
+    data-image-lightbox
+    role="dialog"
+    aria-modal="true"
+    aria-label="تصویر بزرگ محصول"
+    aria-hidden="true"
+    hidden
+>
+    <button class="image-lightbox__close" type="button" data-lightbox-close aria-label="بستن تصویر">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m18 6-12 12M6 6l12 12"></path>
+        </svg>
+    </button>
+    <img class="image-lightbox__image" data-lightbox-image alt="">
+</div>
 @endsection

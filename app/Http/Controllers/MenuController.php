@@ -12,7 +12,6 @@ class MenuController extends Controller
 {
     public function __invoke(): View
     {
-        $categorySymbols = ['◉', '♨', '◌', '❋', '✦'];
         $artColors = ['orange', 'teal', 'red'];
         $categories = Category::query()
             ->where('is_active', true)
@@ -22,15 +21,15 @@ class MenuController extends Controller
             ->get();
 
         $menuCategories = $categories->values()->map(
-            static fn (Category $category, int $index): array => [
+            static fn (Category $category): array => [
                 'id' => $category->id,
                 'name' => $category->name,
-                'symbol' => $categorySymbols[$index % count($categorySymbols)],
+                'icon' => $category->icon,
             ],
         );
 
         $menuProducts = $categories->values()->flatMap(
-            static function (Category $category, int $categoryIndex) use ($categorySymbols, $artColors): array {
+            static function (Category $category) use ($artColors): array {
                 return $category->products->map(
                     static fn (Product $product): array => [
                         'id' => $product->id,
@@ -41,7 +40,7 @@ class MenuController extends Controller
                         'discount_percent' => $product->discount_percent,
                         'category_id' => $product->category_id,
                         'category_name' => $category->name,
-                        'category_symbol' => $categorySymbols[$categoryIndex % count($categorySymbols)],
+                        'category_icon' => $category->icon,
                         'color' => $artColors[$product->sort_order % count($artColors)],
                         'spicy' => $product->is_spicy,
                         'vegetarian' => $product->is_vegetarian,
@@ -57,7 +56,7 @@ class MenuController extends Controller
         return view('menu', [
             'categories' => $menuCategories,
             'products' => $menuProducts,
-            'restaurantName' => $settings?->restaurant_name ?? 'رستوران نارنج',
+            'restaurantName' => $settings?->restaurant_name ?? 'پاریس لانژ',
             'logoUrl' => $settings?->logo_url,
         ]);
     }

@@ -70,6 +70,28 @@ class PublicMenuCacheTest extends TestCase
         $this->assertCacheVersionChanged($cache, $previousVersion);
     }
 
+    public function test_brand_migration_updates_legacy_settings_and_invalidates_the_cached_menu(): void
+    {
+        config(['cache.stores.file' => ['driver' => 'array']]);
+
+        Settings::query()->create([
+            'id' => 1,
+            'restaurant_name' => 'رستوران نارنج',
+        ]);
+        $cache = app(PublicMenuCache::class);
+        $previousVersion = $cache->version('https://restaurant.example');
+        $cache->put($previousVersion, '<html>old</html>', '"old"');
+
+        $migration = require database_path('migrations/2026_11_09_000001_update_restaurant_brand_name.php');
+        $migration->up();
+
+        $this->assertDatabaseHas('settings', [
+            'id' => 1,
+            'restaurant_name' => 'پاریس لانژ',
+        ]);
+        $this->assertCacheVersionChanged($cache, $previousVersion);
+    }
+
     public function test_deleting_a_product_invalidates_the_cached_menu(): void
     {
         config(['cache.stores.file' => ['driver' => 'array']]);

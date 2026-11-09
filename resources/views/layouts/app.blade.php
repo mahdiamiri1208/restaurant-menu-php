@@ -6,8 +6,14 @@
     <meta name="theme-color" content="#15110e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>@yield('title', 'منوی رستوران نارنج')</title>
-    <meta name="description" content="منوی دیجیتال رستوران نارنج">
+    <title>@yield('title', 'منوی پاریس لانژ | Paris Lounge')</title>
+    <meta name="application-name" content="Paris Lounge">
+    <meta name="description" content="منوی دیجیتال پاریس لانژ (Paris Lounge)">
+    <meta property="og:site_name" content="Paris Lounge">
+    <meta property="og:title" content="@yield('title', 'منوی پاریس لانژ | Paris Lounge')">
+    <meta property="og:description" content="منوی دیجیتال پاریس لانژ (Paris Lounge)">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <style>
         @font-face {

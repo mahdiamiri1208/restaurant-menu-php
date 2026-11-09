@@ -13,6 +13,7 @@ return new class extends Migration
             $table->collation('utf8mb4_unicode_ci');
             $table->string('id', 191)->primary();
             $table->string('name', 255);
+            $table->string('icon', 50)->default('utensils');
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->dateTime('created_at');
@@ -47,7 +48,7 @@ return new class extends Migration
             $table->charset('utf8mb4');
             $table->collation('utf8mb4_unicode_ci');
             $table->integer('id')->primary()->default(1);
-            $table->string('restaurant_name', 255)->default('رستوران نارنج');
+            $table->string('restaurant_name', 255)->default('پاریس لانژ');
             $table->string('logo_url', 255)->nullable();
             $table->string('phone', 32)->nullable();
             $table->string('address', 300)->nullable();
