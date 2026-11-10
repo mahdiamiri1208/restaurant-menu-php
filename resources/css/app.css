@@ -36,7 +36,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .ambient-red { top: 68%; right: -230px; background: #b5413a; }
 .menu-content { width: min(100% - 32px, 760px); margin-inline: auto; padding: 38px 0 130px; }
 .menu-header { display: flex; align-items: center; gap: 14px; min-height: 58px; animation: appear .5s ease both; }
-.restaurant-mark { position: relative; width: 54px; height: 54px; flex: 0 0 54px; display: grid; place-items: center; overflow: hidden; border: 1px solid rgba(255,255,255,.25); border-radius: 16px; color: var(--accent); background: rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+.restaurant-mark { position: relative; width: 54px; height: 54px; flex: 0 0 54px; display: grid; place-items: center; overflow: hidden; border-radius: 16px; color: var(--accent); background: rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
 .restaurant-copy { flex: 1; }
 .restaurant-copy h1 { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.4; }
 .eyebrow { margin: 0 0 1px; color: var(--muted); font-size: 11px; }

@@ -14,6 +14,8 @@
     <meta property="og:description" content="منوی دیجیتال پاریس لانژ (Paris Lounge)">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <style>
         @font-face {
