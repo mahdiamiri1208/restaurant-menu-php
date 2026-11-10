@@ -8,6 +8,9 @@ if (menu) {
     const categoryChips = [...menu.querySelectorAll('[data-category-chip]')];
     const emptyResults = menu.querySelector('[data-empty-results]');
     const numberFormatter = new Intl.NumberFormat('fa-IR');
+    let categoryScrollInProgress = false;
+    let categoryScrollTimer = null;
+    let pendingCategoryId = null;
 
     const setActiveCategory = (categoryId) => {
         let activeChip = null;
@@ -33,6 +36,72 @@ if (menu) {
             });
         }
     };
+
+    const syncActiveCategoryToViewport = () => {
+        const activationLine = window.innerHeight * 0.25;
+        let currentSection = productSections.find((section) => {
+            const bounds = section.getBoundingClientRect();
+            return bounds.top <= activationLine && bounds.bottom > activationLine;
+        });
+
+        if (!currentSection) {
+            currentSection = productSections.reduce((closest, section) => {
+                const bounds = section.getBoundingClientRect();
+                const distance = activationLine < bounds.top
+                    ? bounds.top - activationLine
+                    : activationLine - bounds.bottom;
+
+                return !closest || distance < closest.distance
+                    ? { section, distance }
+                    : closest;
+            }, null)?.section;
+        }
+
+        if (currentSection) {
+            setActiveCategory(currentSection.dataset.category);
+        }
+    };
+
+    const endCategoryScroll = (syncToViewport = false) => {
+        if (!categoryScrollInProgress) {
+            return;
+        }
+
+        clearTimeout(categoryScrollTimer);
+        categoryScrollInProgress = false;
+
+        if (syncToViewport) {
+            pendingCategoryId = null;
+            syncActiveCategoryToViewport();
+            return;
+        }
+
+        if (pendingCategoryId) {
+            setActiveCategory(pendingCategoryId);
+            pendingCategoryId = null;
+        }
+    };
+
+    window.addEventListener('scroll', () => {
+        if (!categoryScrollInProgress) {
+            return;
+        }
+
+        clearTimeout(categoryScrollTimer);
+        categoryScrollTimer = setTimeout(() => endCategoryScroll(), 160);
+    }, { passive: true });
+    window.addEventListener('scrollend', () => endCategoryScroll());
+    window.addEventListener('wheel', () => endCategoryScroll(true), { passive: true });
+    window.addEventListener('touchstart', () => endCategoryScroll(true), { passive: true });
+    window.addEventListener('keydown', (event) => {
+        if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"]')) {
+            return;
+        }
+
+        if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) {
+            endCategoryScroll(true);
+        }
+    });
 
     const icons = {
         search: '<circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path>',
@@ -86,9 +155,19 @@ if (menu) {
     categoryChips.forEach((chip) => {
         chip.addEventListener('click', () => {
             const categoryId = chip.dataset.categoryChip;
+            const section = document.getElementById(`section-${categoryId}`);
+
+            if (!section) {
+                return;
+            }
+
+            categoryScrollInProgress = true;
+            pendingCategoryId = categoryId;
+            clearTimeout(categoryScrollTimer);
+            categoryScrollTimer = setTimeout(() => endCategoryScroll(), 1200);
             setActiveCategory(categoryId);
 
-            document.getElementById(`section-${categoryId}`)?.scrollIntoView({
+            section.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start',
             });
@@ -97,6 +176,10 @@ if (menu) {
 
     const sections = menu.querySelectorAll('[data-category]');
     const observer = new IntersectionObserver((entries) => {
+        if (categoryScrollInProgress) {
+            return;
+        }
+
         const current = entries
             .filter((entry) => entry.isIntersecting)
             .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
