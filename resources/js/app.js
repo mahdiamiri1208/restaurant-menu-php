@@ -9,6 +9,31 @@ if (menu) {
     const emptyResults = menu.querySelector('[data-empty-results]');
     const numberFormatter = new Intl.NumberFormat('fa-IR');
 
+    const setActiveCategory = (categoryId) => {
+        let activeChip = null;
+        const wasActive = categoryChips.some((chip) =>
+            chip.dataset.categoryChip === categoryId && chip.classList.contains('active')
+        );
+
+        categoryChips.forEach((chip) => {
+            const active = chip.dataset.categoryChip === categoryId;
+            chip.classList.toggle('active', active);
+            chip.setAttribute('aria-pressed', String(active));
+
+            if (active) {
+                activeChip = chip;
+            }
+        });
+
+        if (activeChip && !wasActive) {
+            activeChip.scrollIntoView({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                block: 'nearest',
+                inline: 'center',
+            });
+        }
+    };
+
     const icons = {
         search: '<circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path>',
         close: '<path d="m18 6-12 12M6 6l12 12"></path>',
@@ -61,16 +86,7 @@ if (menu) {
     categoryChips.forEach((chip) => {
         chip.addEventListener('click', () => {
             const categoryId = chip.dataset.categoryChip;
-            categoryChips.forEach((item) => {
-                const active = item === chip;
-                item.classList.toggle('active', active);
-                item.setAttribute('aria-pressed', String(active));
-            });
-
-            if (categoryId === 'all') {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
-            }
+            setActiveCategory(categoryId);
 
             document.getElementById(`section-${categoryId}`)?.scrollIntoView({
                 behavior: 'smooth',
@@ -90,11 +106,7 @@ if (menu) {
         }
 
         const categoryId = current.target.getAttribute('data-category') || 'all';
-        categoryChips.forEach((chip) => {
-            const active = chip.dataset.categoryChip === categoryId;
-            chip.classList.toggle('active', active);
-            chip.setAttribute('aria-pressed', String(active));
-        });
+        setActiveCategory(categoryId);
     }, { rootMargin: '-25% 0px -65% 0px', threshold: [0, 0.2, 0.5] });
 
     sections.forEach((section) => observer.observe(section));

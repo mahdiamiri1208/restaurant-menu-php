@@ -24,12 +24,11 @@
             <input type="search" placeholder="جستجو در منو..." aria-label="جستجو در منو" tabindex="-1" data-search-input>
         </div>
         <nav class="category-rail" aria-label="دسته‌بندی منو">
-            <button type="button" class="category-chip active" aria-pressed="true" data-category-chip="all"><span class="category-symbol" aria-hidden="true">{{ \App\Support\MenuCategoryIcon::render('sparkles') }}</span>همه</button>
             @foreach($categories as $category)
                 <button type="button" class="category-chip" aria-pressed="false" data-category-chip="{{ $category['id'] }}"><span class="category-symbol" aria-hidden="true">{{ \App\Support\MenuCategoryIcon::render($category['icon']) }}</span>{{ $category['name'] }}</button>
             @endforeach
         </nav>
-        <section class="menu-intro" data-category="all"><p>منوی امروز</p><span>با عشق آماده شده برای شما</span></section>
+        <section class="menu-intro"><p>منوی امروز</p><span>با عشق آماده شده برای شما</span></section>
         <div class="menu-sections">
             @foreach($categories as $category)
                 @php($items = $products->where('category_id', $category['id'])->values())
@@ -78,9 +77,9 @@
             @endforeach
             <p class="empty-results" hidden data-empty-results>موردی با این نام پیدا نشد.</p>
         </div>
-        <footer class="menu-footer">مواد اولیه تازه، هر روز در پاریس لانژ</footer>
     </div>
 </main>
+<footer class="menu-footer">کیفیت و تازگی سفارش شما اولویت ماست. از صبوری شما سپاسگزاریم.</footer>
 <div
     class="image-lightbox"
     data-image-lightbox

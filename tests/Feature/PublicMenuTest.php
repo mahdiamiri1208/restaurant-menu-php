@@ -36,7 +36,9 @@ class PublicMenuTest extends TestCase
 
         $this->get('/menu')
             ->assertOk()
+            ->assertDontSee('data-category-chip="all"', false)
             ->assertSee('<title>منوی پاریس لانژ</title>', false)
+            ->assertSee('کیفیت و تازگی سفارش شما اولویت ماست. از صبوری شما سپاسگزاریم.')
             ->assertSee('پاریس لانژ')
             ->assertSee('Paris Lounge')
             ->assertSee('<meta property="og:site_name" content="Paris Lounge">', false)
@@ -66,12 +68,14 @@ class PublicMenuTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $category = Category::query()->findOrFail('sample-category-1');
-        $category->icon = 'salad';
+        $category->icon = 'beef';
         $category->save();
 
         $response = $this->get('/menu')->assertOk();
 
-        self::assertSame(4, substr_count($response->getContent(), 'data-icon="salad"'));
+        self::assertSame(4, substr_count($response->getContent(), 'data-icon="beef"'));
+        $response->assertSee('transform="scale(.48)"', false)
+            ->assertSee('fill="currentColor" fill-rule="evenodd"', false);
     }
 
     public function test_product_images_are_connected_to_the_public_image_lightbox(): void
