@@ -32,8 +32,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .menu-shell { min-height: 100vh; position: relative; overflow: clip; background: #15110e; isolation: isolate; }
 .ambient { position: absolute; z-index: -1; width: 310px; aspect-ratio: 1; border-radius: 50%; filter: blur(78px); opacity: .68; pointer-events: none; }
 .ambient-orange { top: -150px; right: -120px; background: #e8892b; }
-.ambient-teal { top: 42%; left: -220px; background: #1f9d8f; }
-.ambient-red { top: 68%; right: -230px; background: #b5413a; }
+.ambient-purple { top: 16%; left: -190px; background: #805ad5; }
+.ambient-teal { top: 34%; right: -220px; background: #1f9d8f; }
+.ambient-blue { top: 52%; left: -170px; background: #3478d4; }
+.ambient-red { top: 70%; right: -230px; background: #b5413a; }
+.ambient-green { bottom: -150px; left: -150px; background: #3b9b69; }
 .menu-content { width: min(100% - 32px, 760px); margin-inline: auto; padding: 38px 0 130px; }
 .menu-header { display: flex; align-items: center; gap: 14px; min-height: 58px; animation: appear .5s ease both; }
 .restaurant-mark { position: relative; width: 54px; height: 54px; flex: 0 0 54px; display: grid; place-items: center; overflow: hidden; border-radius: 16px; color: var(--accent); background: rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
@@ -90,7 +93,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .product-unavailable { opacity: .52; }
 .unavailable-label { color: #ffc0b7; font-size: 11px; }
 .empty-results { padding: 30px 12px; color: var(--muted); text-align: center; }
-.menu-footer { position: fixed; z-index: 10; inset-inline-start: 50%; bottom: max(10px, env(safe-area-inset-bottom)); width: min(calc(100% - 32px), 620px); padding: 8px 12px; transform: translateX(50%); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; color: #fff; background: #302722; box-shadow: 0 8px 24px rgba(0,0,0,.32); font-size: 11px; line-height: 1.6; text-align: center; }
+.menu-footer { position: fixed; z-index: 10; inset-inline-start: 50%; bottom: max(10px, env(safe-area-inset-bottom)); width: min(calc(100% - 32px), 620px); padding: 8px 12px; transform: translateX(50%); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; color: #fff; background: #302722; font-size: 11px; line-height: 1.6; text-align: center; }
 .image-lightbox { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); background: rgba(8, 7, 6, .9); opacity: 0; overscroll-behavior: contain; -webkit-tap-highlight-color: transparent; backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); transition: opacity .24s ease; }
 .image-lightbox[hidden] { display: none; }
 .image-lightbox.is-open { opacity: 1; }

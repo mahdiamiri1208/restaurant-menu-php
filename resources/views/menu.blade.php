@@ -5,6 +5,7 @@
 @section('content')
 <main class="menu-shell" data-menu>
     <div class="ambient ambient-orange"></div><div class="ambient ambient-teal"></div><div class="ambient ambient-red"></div>
+    <div class="ambient ambient-purple"></div><div class="ambient ambient-blue"></div><div class="ambient ambient-green"></div>
     <div class="menu-content">
         <header class="menu-header">
             <div class="restaurant-mark">
@@ -66,7 +67,7 @@
                                         </div>
                                         <div class="product-price">
                                             @if($product['discount_percent'])<span class="old-price">{{ \App\Support\MenuFormatter::toman($product['price']) }}</span>@endif
-                                            <strong>{{ \App\Support\MenuFormatter::toman($product['final_price']) }} <small>تومان</small></strong>
+                                            <strong>{{ \App\Support\MenuFormatter::toman($product['final_price']) }}</strong>
                                         </div>
                                     </div>
                                 </div>
