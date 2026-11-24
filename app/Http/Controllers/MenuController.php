@@ -16,8 +16,9 @@ class MenuController extends Controller
         $categories = Category::query()
             ->where('is_active', true)
             ->whereHas('products')
-            ->with(['products' => static fn ($query) => $query->orderBy('sort_order')])
+            ->with(['products' => static fn ($query) => $query->orderBy('sort_order')->orderBy('id')])
             ->orderBy('sort_order')
+            ->orderBy('id')
             ->get();
 
         $menuCategories = $categories->values()->map(

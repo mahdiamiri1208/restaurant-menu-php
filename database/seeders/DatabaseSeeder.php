@@ -20,20 +20,19 @@ class DatabaseSeeder extends Seeder
             throw new RuntimeException('Set ADMIN_USERNAME and an ADMIN_PASSWORD between 12 and 128 characters before seeding.');
         }
 
-        $admin = User::query()->firstOrNew();
-        $admin->forceFill([
-            'name' => $username,
-            'username' => $username,
-            'email' => 'admin@restaurant-menu.invalid',
-            'password' => $password,
-        ])->save();
+        User::query()->firstOrCreate(
+            ['username' => $username],
+            [
+                'name' => $username,
+                'email' => 'admin@restaurant-menu.invalid',
+                'password' => $password,
+            ],
+        );
 
         $settings = Settings::query()->firstOrCreate(
             ['id' => 1],
             [
                 'restaurant_name' => 'پاریس لانژ',
-                'phone' => '021-00000000',
-                'address' => 'تهران',
             ],
         );
 

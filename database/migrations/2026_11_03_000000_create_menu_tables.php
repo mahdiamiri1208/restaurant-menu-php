@@ -50,8 +50,6 @@ return new class extends Migration
             $table->integer('id')->primary()->default(1);
             $table->string('restaurant_name', 255)->default('پاریس لانژ');
             $table->string('logo_url', 255)->nullable();
-            $table->string('phone', 32)->nullable();
-            $table->string('address', 300)->nullable();
             $table->boolean('samples_seeded')->default(false);
         });
     }

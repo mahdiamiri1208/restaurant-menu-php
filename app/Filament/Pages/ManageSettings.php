@@ -10,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\DB;
 use UnitEnum;
 
 class ManageSettings extends Page
@@ -30,24 +31,21 @@ class ManageSettings extends Page
 
     public function mount(): void
     {
-        $settings = Settings::query()->find(1);
+        $settings = $this->getSettingsRecord();
 
-        $this->form->fill($settings?->only([
+        $this->form->fill($settings->exists ? $settings->only([
             'restaurant_name',
             'logo_url',
-            'phone',
-            'address',
-        ]) ?? [
+        ]) : [
             'restaurant_name' => 'پاریس لانژ',
             'logo_url' => null,
-            'phone' => null,
-            'address' => null,
         ]);
     }
 
     public function form(Schema $schema): Schema
     {
         return $schema
+            ->record($this->getSettingsRecord())
             ->components([
                 TextInput::make('restaurant_name')
                     ->label('نام رستوران')
@@ -57,17 +55,6 @@ class ManageSettings extends Page
                     ->trim()
                     ->autofocus(),
                 MenuImageUpload::make('logo_url', 'لوگوی رستوران'),
-                TextInput::make('phone')
-                    ->label('شماره تماس')
-                    ->maxLength(32)
-                    ->trim()
-                    ->nullable(),
-                TextInput::make('address')
-                    ->label('نشانی')
-                    ->maxLength(300)
-                    ->trim()
-                    ->nullable()
-                    ->columnSpanFull(),
             ])
             ->statePath('data');
     }
@@ -76,12 +63,19 @@ class ManageSettings extends Page
     {
         $data = $this->form->getState();
 
-        Settings::query()->updateOrCreate(['id' => 1], $data);
+        DB::transaction(function () use ($data): void {
+            $this->getSettingsRecord()->fill($data)->save();
+        });
 
         Notification::make()
             ->title('تنظیمات ذخیره شد.')
             ->success()
             ->send();
+    }
+
+    protected function getSettingsRecord(): Settings
+    {
+        return Settings::query()->firstOrNew(['id' => 1]);
     }
 
     public function getTitle(): string|Htmlable

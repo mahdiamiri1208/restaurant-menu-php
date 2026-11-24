@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Livewire\Component;
 
 class ProductsTable
 {
@@ -18,7 +19,14 @@ class ProductsTable
     {
         return $table
             ->defaultSort('sort_order')
-            ->reorderable('sort_order')
+            ->reorderable(
+                'sort_order',
+                static fn (Component $livewire): bool => blank($livewire->tableSearch)
+                    && collect($livewire->tableFilters ?? [])
+                        ->flatten()
+                        ->filter(static fn (mixed $value): bool => filled($value))
+                        ->isEmpty(),
+            )
             ->afterReordering(static fn () => app(PublicMenuCache::class)->invalidate())
             ->columns([
                 ImageColumn::make('image_url')

@@ -4,8 +4,9 @@ namespace App\Filament\Support;
 
 use App\Support\MenuImageProcessor;
 use Filament\Forms\Components\FileUpload;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class MenuImageUpload
 {
@@ -16,6 +17,7 @@ class MenuImageUpload
             ->image()
             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
             ->maxSize(5120)
+            ->maxFiles(1)
             ->disk('public_uploads')
             ->directory('')
             ->imagePreviewHeight('80')
@@ -28,14 +30,36 @@ class MenuImageUpload
                 },
             )
             ->saveUploadedFileUsing(
-                static fn (FileUpload $component, TemporaryUploadedFile $file): string => app(MenuImageProcessor::class)
-                    ->store($file, $component->getName()),
-            )
-            ->deleteUploadedFileUsing(
-                static function (string|TemporaryUploadedFile $file): void {
-                    if (is_string($file)) {
-                        app(MenuImageProcessor::class)->delete($file);
+                static function (FileUpload $component, TemporaryUploadedFile $file): string {
+                    $storedPath = app(MenuImageProcessor::class)->store($file, $component->getName());
+
+                    if (DB::transactionLevel() > 0) {
+                        DB::afterRollBack(static function () use ($storedPath): void {
+                            app(MenuImageProcessor::class)->delete($storedPath);
+                        });
                     }
+
+                    return $storedPath;
+                },
+            )
+            ->afterStateUpdated(
+                static function (FileUpload $component): void {
+                    $state = $component->getRawState();
+
+                    if (! is_array($state) || count($state) < 2) {
+                        return;
+                    }
+
+                    $files = array_values($state);
+                    $latest = array_pop($files);
+
+                    foreach ($files as $file) {
+                        if ($file instanceof TemporaryUploadedFile) {
+                            $file->delete();
+                        }
+                    }
+
+                    $component->state($latest);
                 },
             )
             ->dehydrateStateUsing(

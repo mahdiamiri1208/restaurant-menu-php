@@ -11,7 +11,32 @@
         selected: $wire.entangle('{{ $statePath }}').live,
     }"
 >
-    <div class="category-icon-grid" role="radiogroup" aria-label="آیکون دسته‌بندی">
+    <div
+        class="category-icon-grid"
+        role="radiogroup"
+        aria-label="آیکون دسته‌بندی"
+        x-on:keydown="
+            if (!['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'Home', 'End'].includes($event.key)) return;
+            $event.preventDefault();
+            const items = [...$event.currentTarget.querySelectorAll('[role=radio]')];
+            const current = items.indexOf($event.target);
+            let next = current;
+            if ($event.key === 'Home') next = 0;
+            else if ($event.key === 'End') next = items.length - 1;
+            else {
+                const forward = $event.key === 'ArrowDown'
+                    || ($event.key === 'ArrowRight' && document.dir !== 'rtl')
+                    || ($event.key === 'ArrowLeft' && document.dir === 'rtl');
+                next = forward
+                    ? (current + 1) % items.length
+                    : (current - 1 + items.length) % items.length;
+            }
+            if (items[next]) {
+                items[next].focus();
+                items[next].click();
+            }
+        "
+    >
         @foreach ($icons as $icon)
             <button
                 type="button"
@@ -20,7 +45,9 @@
                     'is-selected' => $selectedIcon === $icon,
                 ])
                 role="radio"
+                tabindex="{{ $selectedIcon === $icon ? '0' : '-1' }}"
                 aria-checked="{{ $selectedIcon === $icon ? 'true' : 'false' }}"
+                :tabindex="selected === '{{ $icon }}' ? 0 : -1"
                 :aria-checked="selected === '{{ $icon }}'"
                 :class="{ 'is-selected': selected === '{{ $icon }}' }"
                 @click="selected = '{{ $icon }}'"

@@ -27,7 +27,7 @@ class CategoryIconPickerTest extends TestCase
         $response = $this->actingAs($admin)
             ->get('/admin/categories/create')
             ->assertOk()
-            ->assertSee('Paris Lounge | پاریس لانژ');
+            ->assertSee('پاریس لانژ');
 
         $iconNames = MenuCategoryIcon::names();
 

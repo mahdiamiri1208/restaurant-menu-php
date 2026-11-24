@@ -14,8 +14,6 @@ class Settings extends Model
         'id',
         'restaurant_name',
         'logo_url',
-        'phone',
-        'address',
         'samples_seeded',
     ];
 
