@@ -37,7 +37,7 @@
                     <div class="section-heading"><span class="section-icon" aria-hidden="true">{{ \App\Support\MenuCategoryIcon::render($category['icon']) }}</span><h2>{{ $category['name'] }}</h2><span class="section-count" data-section-count>{{ \App\Support\MenuFormatter::toman($items->count()) }} مورد</span></div>
                     <div class="product-list">
                         @foreach($items as $product)
-                            <article class="product-card{{ $product['available'] ? '' : ' product-unavailable' }}" data-product data-name="{{ mb_strtolower($product['name'], 'UTF-8') }}">
+                            <article class="product-card" data-product data-name="{{ mb_strtolower($product['name'], 'UTF-8') }}">
                                 <div class="product-art art-{{ $product['color'] }}">
                                     @if($product['image_url'])
                                         <img
@@ -60,11 +60,6 @@
                                     <div class="product-title-line"><h3>{{ $product['name'] }}</h3>@if($product['discount_percent'])<span class="discount-badge">٪{{ \App\Support\MenuFormatter::toman($product['discount_percent']) }}</span>@endif</div>
                                     <p class="product-description">{{ $product['description'] }}</p>
                                     <div class="product-bottom">
-                                        <div class="product-tags">
-                                            @if($product['spicy'])<span class="food-tag spicy">@include('partials.menu-icon', ['name' => 'flame', 'size' => 14]) تند</span>@endif
-                                            @if($product['vegetarian'])<span class="food-tag vegetarian">@include('partials.menu-icon', ['name' => 'leaf', 'size' => 14]) گیاهی</span>@endif
-                                            @unless($product['available'])<span class="unavailable-label">ناموجود</span>@endunless
-                                        </div>
                                         <div class="product-price">
                                             @if($product['discount_percent'])<span class="old-price">{{ \App\Support\MenuFormatter::toman($product['price']) }}</span>@endif
                                             <strong>{{ \App\Support\MenuFormatter::toman($product['final_price']) }}</strong>

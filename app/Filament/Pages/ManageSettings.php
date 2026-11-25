@@ -7,7 +7,9 @@ use App\Models\Settings;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Page;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +28,8 @@ class ManageSettings extends Page
     protected static ?string $slug = 'settings';
 
     protected string $view = 'filament.pages.manage-settings';
+
+    protected Width|string|null $maxContentWidth = Width::FourExtraLarge;
 
     public ?array $data = [];
 
@@ -47,14 +51,21 @@ class ManageSettings extends Page
         return $schema
             ->record($this->getSettingsRecord())
             ->components([
-                TextInput::make('restaurant_name')
-                    ->label('نام رستوران')
-                    ->required()
-                    ->minLength(2)
-                    ->maxLength(100)
-                    ->trim()
-                    ->autofocus(),
-                MenuImageUpload::make('logo_url', 'لوگوی رستوران'),
+                Section::make('هویت رستوران')
+                    ->description('این اطلاعات در سربرگ منوی عمومی و پنل مدیریت نمایش داده می‌شود.')
+                    ->icon(Heroicon::OutlinedBuildingStorefront)
+                    ->schema([
+                        TextInput::make('restaurant_name')
+                            ->label('نام رستوران')
+                            ->required()
+                            ->minLength(2)
+                            ->maxLength(100)
+                            ->trim()
+                            ->autofocus()
+                            ->helperText('نامی که مهمان در بالای منو می‌بیند.'),
+                        MenuImageUpload::make('logo_url', 'لوگوی رستوران')
+                            ->helperText('فرمت JPG، PNG یا WebP؛ حداکثر ۵ مگابایت. تصویر مربع بهترین نتیجه را دارد.'),
+                    ]),
             ])
             ->statePath('data');
     }
@@ -68,9 +79,15 @@ class ManageSettings extends Page
         });
 
         Notification::make()
-            ->title('تنظیمات ذخیره شد.')
+            ->title('تنظیمات با موفقیت ذخیره شد.')
+            ->body('تغییرات نام و لوگو اکنون در منوی عمومی قابل مشاهده است.')
             ->success()
             ->send();
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'نام و لوگوی رستوران را یک‌جا مدیریت کنید؛ تغییرات بلافاصله در منو اعمال می‌شوند.';
     }
 
     protected function getSettingsRecord(): Settings

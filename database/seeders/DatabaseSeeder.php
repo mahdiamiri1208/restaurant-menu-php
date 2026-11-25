@@ -40,21 +40,21 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'پیش‌غذا',
                 'products' => [
-                    ['name' => 'سالاد سزار', 'description' => 'کاهوی تازه، مرغ گریل و سس مخصوص', 'price' => 285000, 'is_vegetarian' => false],
-                    ['name' => 'سوپ روز', 'description' => 'سوپ گرم با سبزیجات فصل', 'price' => 165000, 'is_vegetarian' => true],
+                    ['name' => 'سالاد سزار', 'description' => 'کاهوی تازه، مرغ گریل و سس مخصوص', 'price' => 285000],
+                    ['name' => 'سوپ روز', 'description' => 'سوپ گرم با سبزیجات فصل', 'price' => 165000],
                 ],
             ],
             [
                 'name' => 'غذای اصلی',
                 'products' => [
-                    ['name' => 'چلو کباب لقمه', 'description' => 'کباب دست‌ساز، برنج ایرانی و گوجه کبابی', 'price' => 495000, 'is_spicy' => true],
+                    ['name' => 'چلو کباب لقمه', 'description' => 'کباب دست‌ساز، برنج ایرانی و گوجه کبابی', 'price' => 495000],
                     ['name' => 'پاستا آلفردو', 'description' => 'مرغ گریل، قارچ و سس خامه‌ای', 'price' => 385000, 'discount_percent' => 15],
                 ],
             ],
             [
                 'name' => 'نوشیدنی',
                 'products' => [
-                    ['name' => 'لیموناد نعنا', 'description' => 'آب‌لیموی تازه، نعنا و یخ', 'price' => 115000, 'is_vegetarian' => true],
+                    ['name' => 'لیموناد نعنا', 'description' => 'آب‌لیموی تازه، نعنا و یخ', 'price' => 115000],
                 ],
             ],
         ];

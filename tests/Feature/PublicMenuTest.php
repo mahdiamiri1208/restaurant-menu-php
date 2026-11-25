@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Caching\PublicMenuCache;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\Settings;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -88,7 +89,7 @@ class PublicMenuTest extends TestCase
         app(PublicMenuCache::class)->invalidate();
         $this->seed(DatabaseSeeder::class);
 
-        $product = \App\Models\Product::query()->findOrFail('sample-product-1-1');
+        $product = Product::query()->findOrFail('sample-product-1-1');
         $product->image_url = '/uploads/sample-product.webp';
         $product->save();
 
@@ -101,5 +102,32 @@ class PublicMenuTest extends TestCase
             ->assertSee('data-lightbox-close', false)
             ->assertSee('aria-modal="true"', false)
             ->assertSee('hidden', false);
+    }
+
+    public function test_unavailable_products_are_hidden_without_deleting_them(): void
+    {
+        config(['cache.stores.file' => ['driver' => 'array']]);
+        app(PublicMenuCache::class)->invalidate();
+        $this->seed(DatabaseSeeder::class);
+
+        $product = Product::query()->findOrFail('sample-product-3-1');
+        $product->update(['is_available' => false]);
+
+        $this->get('/menu')
+            ->assertOk()
+            ->assertDontSee('لیموناد نعنا')
+            ->assertDontSee('نوشیدنی');
+
+        self::assertDatabaseHas('products', [
+            'id' => $product->id,
+            'is_available' => false,
+        ]);
+
+        $product->update(['is_available' => true]);
+
+        $this->get('/menu')
+            ->assertOk()
+            ->assertSee('لیموناد نعنا')
+            ->assertSee('نوشیدنی');
     }
 }

@@ -16,8 +16,6 @@ class Product extends Model
         'discount_percent',
         'image_url',
         'is_available',
-        'is_spicy',
-        'is_vegetarian',
         'sort_order',
         'category_id',
     ];
@@ -41,8 +39,6 @@ class Product extends Model
             'price' => 'integer',
             'discount_percent' => 'integer',
             'is_available' => 'boolean',
-            'is_spicy' => 'boolean',
-            'is_vegetarian' => 'boolean',
             'sort_order' => 'integer',
         ];
     }

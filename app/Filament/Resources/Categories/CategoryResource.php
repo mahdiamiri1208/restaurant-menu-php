@@ -5,9 +5,11 @@ namespace App\Filament\Resources\Categories;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
+use App\Filament\Resources\Categories\RelationManagers\ProductsRelationManager;
 use App\Filament\Resources\Categories\Schemas\CategoryForm;
 use App\Filament\Resources\Categories\Tables\CategoriesTable;
 use App\Models\Category;
+use App\Support\MenuFormatter;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -18,7 +20,9 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
+
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Squares2x2;
 
     protected static ?string $navigationLabel = 'دسته‌بندی‌ها';
 
@@ -43,7 +47,7 @@ class CategoryResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            'products' => ProductsRelationManager::class,
         ];
     }
 
@@ -54,5 +58,22 @@ class CategoryResource extends Resource
             'create' => CreateCategory::route('/create'),
             'edit' => EditCategory::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::query()->count();
+
+        return $count > 0 ? MenuFormatter::toman($count) : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'gray';
+    }
+
+    public static function getNavigationBadgeTooltip(): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        return 'تعداد دسته‌بندی‌ها';
     }
 }

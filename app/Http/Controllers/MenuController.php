@@ -15,8 +15,12 @@ class MenuController extends Controller
         $artColors = ['orange', 'teal', 'red'];
         $categories = Category::query()
             ->where('is_active', true)
-            ->whereHas('products')
-            ->with(['products' => static fn ($query) => $query->orderBy('sort_order')->orderBy('id')])
+            ->whereHas('products', static fn ($query) => $query->where('is_available', true))
+            ->with(['products' => static fn ($query) => $query
+                ->where('is_available', true)
+                ->orderBy('sort_order')
+                ->orderBy('id'),
+            ])
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
@@ -43,9 +47,6 @@ class MenuController extends Controller
                         'category_name' => $category->name,
                         'category_icon' => $category->icon,
                         'color' => $artColors[$product->sort_order % count($artColors)],
-                        'spicy' => $product->is_spicy,
-                        'vegetarian' => $product->is_vegetarian,
-                        'available' => $product->is_available,
                         'image_url' => $product->image_url,
                     ],
                 )->all();

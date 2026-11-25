@@ -46,4 +46,14 @@ class Login extends BaseLogin
             'data.username' => 'نام کاربری یا رمز عبور اشتباه است.',
         ]);
     }
+
+    public function getHeading(): ?string
+    {
+        return 'ورود به پنل مدیریت';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'برای مدیریت منو، محصولات و تنظیمات رستوران وارد شوید.';
+    }
 }
